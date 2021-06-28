@@ -1,0 +1,46 @@
+
+Intellij IDEA（旗舰版，找破解方法）
+WebStorm				https://www.jb51.net/softs/598714.html    https://www.jianshu.com/p/6c282e952a6e
+eclipse
+navicat premium 12  	https://baijiahao.baidu.com/s?id=1644169351506023288&wfr=spider&for=pc
+mysql数据库    			https://blog.csdn.net/weixin_38239039/article/details/79629984
+
+redis及其可视化工具		
+https://blog.csdn.net/weixin_41381863/article/details/88231397    
+https://github.com/microsoftarchive/redis/releases/tag/win-3.2.100
+
+Google浏览器			http://chrome.yscyxx.cn/
+Notepad++ 或EditPlus
+Postman（服务端接口调试工具）  https://www.onlinedown.net/soft/971602.htm
+     https://blog.csdn.net/fxbin123/article/details/80428216
+虚拟机Vmware12			https://blog.csdn.net/qq_38704372/article/details/79552934
+Typora（MarkDown文本编辑器）    https://www.typora.io/#windows
+Xshell6					https://www.onlinedown.net/soft/36383.htm     
+https://www.netsarang.com/zh/thank-you-download/  邮箱中有下载链接
+Xftp6
+JD-GUI反编译工具		https://jd-gui.apponic.com/
+Beyond Compare文本比对工具			https://www.onlinedown.net/soft/23172.htm
+Maven 					https://blog.csdn.net/c_staunch/article/details/100981699    
+https://www.cnblogs.com/platycoden/p/8313503.html
+git						https://blog.csdn.net/chinarcsdn/article/details/83353562
+SVN						https://blog.csdn.net/qq_42928918/article/details/89346956    
+https://jingyan.baidu.com/article/e75aca850ee84f142fdac655.html
+SourceTree				https://www.cnblogs.com/fisherbook/p/11397168.html
+Tomcat9 				https://blog.csdn.net/qq_40881680/article/details/83582484
+Fiddler抓包工具         https://www.cnblogs.com/yyhh/p/5140852.html
+有道笔记
+Xmind思导图             https://www.xmind.cn/
+搜索工具Everything 		https://www.voidtools.com/zh-cn/
+
+
+https://www.cnblogs.com/caixueliang/p/7479821.html
+码云开源项目:bootdo   下载下来可以演示下
+学成在线项目可以下载下来看下
+
+github  码云  链接放到桌面
+
+
+
+
+
+

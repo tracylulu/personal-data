@@ -1,0 +1,390 @@
+微服务概述：对照pdf中讲解
+【单体架构】
+1. 什么是单体架构
+一个归档包（例如war格式）包含了应用所有功能的应用程序，我们通常称之为单体应用。
+
+
+微服务具有以下的特点：
+1.按照业务来划分服务，单个服务代码量小，业务单一，易于维护。
+2.每个微服务都有自己独立的基础组件，例如数据库、缓存等，且运行在独立的进程中。
+3.微服务之间的通信是通过HTTP 协议或者消息组件，且具有容错能力。
+4.微服务有一套服务治理的解决方案，服务之间不相合，可以随时加入和剔除服务。
+5.单个微服务能够集群化部署，并且有负载均衡的能力。
+6.整个微服务系统应该有一个完整的安全机制，包括用户验证、权限验证、资源保护等。
+7.整个微服务系统有链路追踪的能力。
+8.有一套完整的实时日志系统。
+
+
+
+根据以上特点，微服务的功能主要体现在以下儿个方面。
+1.服务的注册和发现。
+2.服务的负载均衡。
+3.服务的容错。
+4.服务网关。
+5.服务配置的统一管理。
+6.链路追踪：整个微服务系统有链路追踪的能力。
+7.实时日志：有一套完整的实时日志系统。
+
+springcloud框架是一款微服务的全套治理方案。包括以上所有的功能实现的组件。
+
+
+
+Netflix	 英 ['netfliːks] 　 　 美 ['netfliːks]	 网飞公司	是一家在线影片租赁提供商，主要提供Netflix超大数量的DVD并免费递送
+Eureka   英 [ju'riːkə] 　 　   美 [ju'riːkə]     服务注册和发现的组件 
+
+一.Eureka 的基本架构
+Eureka 的基本架构如｜到2-1 所示，其中主要包括以下3 种角色。
+1.Register Service ：服务注册中心，它是一个Eureka Server ，提供服务注册和发现的功能。
+2.Provider Service ：服务提供者，它是一个Eureka Client ，提供服务。
+3.Consumer Service ：服务消费者，它是一个Eureka Cient ，消费服务。
+服务消费的基本过程如下：首先要一个服务注册中心Eureka Server ，服务提供者Eureka
+Client 向服务注册中心Eureka Server 注册，将自己的信息（比如服务名和服务的IP 地址等）
+通过REST API的形式提交给服务注册中心Eureka Server 。同样，服务消费者Eureka Client 也
+向服务注册中心Eureka Server注册，同时服务消费者获取一份服务注册列表的信息， 该列表
+包含了所有向服务注册中心Eureka Server 注册的服务信息。获取服务注册列表信息之后，服
+务消费者就知道服务提供者的IP 地址，可以通过Http 远程调度来消费服务提供者的服务。
+
+Eureka 的一些概念：
+Register一一服务注册
+Renew一一服务续约
+Fetch Registries一一获取服务注册列表信息
+Cancel －一服务下线
+Eviction一一服务剔除
+
+从图5-3 中可知， 在这个架构中有两个角色，即Eureka Server 和Eureka Client 。而Eureka
+Client 又分为Applicaton Service 和Application Client ， 即服务提供者和服务消费者。
+
+
+
+二.负载均衡Ribbon   英 ['rɪbən] 　 　  美 ['rɪbən] 
+RestTemplate 是Spring Resources 中一个访问第三方RESTful API 接口的网络请求框架。
+RestTemplate 是用来消费REST 服务的，所以RestTemplate 的主要方法都与REST 的http
+协议的一些方法紧密相连，例如HEAD 、GET 、POST 、PUT 、DELETE 和OPTIONS 等方法，
+
+负载均衡是指将负载分摊到多个执行单元上，常见的负载均衡有两种方式。一种是独立进
+程单元，通过负载均衡策略，将请求转发到不同的执行单元上，例如Ngnix 。另一种是将负载
+均衡逻辑以代码的形式封装到服务消费者的客户端上，服务消费者客户端维护了一份服务提供
+者的信息列表，有了信息列表，通过负载均衡策略将请求分摊给多个服务提供者，从而达到负
+载均衡的目的。
+
+
+写一个RESTful API 接口，在该API 接口内部需要调用eureka-client 的API 接口＂ /hi ”，
+即服务消费。由于eureka-client 为两个实例，它们的端口为8762 和8763 。在调用eureka-client
+的API 接口“／hi ”时希望做到轮流访问这两个实例，这时就需要将RestTemplate 和Ribbon 相
+结合，进行负载均衡。
+
+负载均衡器的核心类为LoadBalancerClient, LoadBalancerCiient 可以获取负载均衡的服务提
+供者的实例信息	
+
+现在我们可以知道，在Ribbon 中的负载均衡客户端为LoadBalancerClient 。在Spring Cloud
+项目中，负载均衡器Ribbon 会默认从Eureka Client 的服务注册列表中获取服务的信息，并缓
+存一份。根据缓存的服务注册列表信息，可以通过LoadBalancerClient 来选择不同的服务实例，
+从而实现负载均衡。如果禁止Ribbon 从Eureka 获取注册列表信息，则需要自己去维护一份服
+务注册列表信息。根据自己维护服务注册列表的信息，Ribbon 也可以实现负载均衡。
+
+由此可见，LoadBalancerClient 是在初始化时向Eureka获取服务注册列表信息，并且每10
+秒向EurekaClient 发送“ ping ”，来判断服务的可用性。如果服务的可用性发生了改变或者服务
+数量和之前的不一致，则更新或者重新拉取。LoadBalancerClient 有了这些服务注册列表信息，
+就可以根据具体的IRule的策略来进行负载均衡。
+
+综上所述， Ribbon 的负载均衡主要是通过LoadBalancerClient 来实现的，而LoadBalancerClient
+具体交给了ILoadBalancer 来处理， ILoadBalancer 通过配置IRule、IPing 等，向EurekaClient
+获取注册列表的信息，默认每10 秒向EurekaClient 发送一次“ping ”， 进而检查是否需要更新
+服务的注册列表信息。最后，在得到服务注册列表信息后， ILoadBalancer 根据IRule 的策略进            
+行负载均衡。
+而RestTemplate 加上＠LoadBalance 注解后，在远程调度时能够负载均衡， 主要是维护了																																																																
+一个被＠LoadBalance 注解的RestTemplate 列表，并给该列表中的RestTemplate 对象添加了拦
+截器。在拦截器的方法中，将远程调度方法交给了Ribbon 的负载均衡器LoadBalancerClient
+去处理，从而达到了负载均衡的目的。
+
+
+
+三.声明式调用Feign   英 [feɪn] 美 [fen]
+Feign 受Retrofit、JAXRS-2.0 和Web Socket 的影响， 采用了声明式API 接口的风格，将
+Java Http 客户端绑定到它的内部。Feign 的首要目标是将Java Http 客户端调用过程变得简单。
+
+Feign 是一个伪Java Http 客户端， Feign 不做任何的请求处理。Feign 通过处理注解生成
+Request 模板，从而简化了Http API 的开发。开发人员可以使用注解的方式定制Request API
+模板。在发送HtφRequest 请求之前， Feign 通过处理注解的方式替换掉Request 模板中的参数，
+生成真正的Request ，并交给Java Http 客户端去处理。利用这种方式，开发者只需要关注Feign
+注解模板的开发，而不用关注Http 请求本身，简化了Http 请求的过程，使得Http 请求变得简
+单和容易理解。
+
+Feign是一个声明式的Web服务客户端，使用Feign可使得Web服务客户端的写入更加方便。
+它具有可插拔注释支持，包括Feign注解和JAX-RS注解、Feign还支持可插拔编码器和解码器、
+Spring Cloud增加了对Spring MVC注释的支持，并HttpMessageConverters在Spring Web中使用了默认使用的相同方式。·
+Spring Cloud集成了Ribbon和Eureka，在使用Feign时提供负载平衡的http客户端。		
+Feign是spring cloud中服务消费端的调用框架,通常与ribbon,hystrix等组合使用。
+
+总的来说， Feign 的源码实现过程如下。
+( 1) 首先通过＠EnableFeignClients 注解开启FeignClient 的功能。只有这个注解存在，才
+会在程序启动时开启对＠FeignClient 注解的包扫描。
+(2 ）根据Feign 的规则实现接口，井在接口上面加上＠FeignClient 注解。
+(3 ）程序启动后，会进行包扫描，扫描所有的＠FeignClient 的注解的类，并将这些信息
+注入IoC 容器中。
+( 4 ）当接口的方法被调用时， 通过JDK 的代理来生成具体的RequestTemplate 棋根对象。
+( 5 ）根据RequestTemplate 再生成Http 请求的Request 对象。
+( 6 ) Request 对象交给Client 去处理， 其中Client 的网络请求框架可以是HttpURLConnection 、
+HttpClient 和OkHttp 。
+(7 ）最后Client 被封装到LoadBalanceClient 类，这个类结合类Ribbon 做到了负载均衡。
+
+
+
+四.熔断器Hystrix	英 [hɪst'rɪks]  美 [hɪst'rɪks]
+Hystrix 是Netflix 公司开源的一个项目，它提供了熔断器功能，能够阻止分布式系统中出现联动故障。
+Hystrix 是通过隔离服务的访问点阻止联动故障的，并提供了故障的解决方案，从而提高了整个分布式系统的弹性。
+
+总的来说， Hystrix 的设计原则如下。
+1.防止单个服务的故障耗尽整个服务的Servlet 容器（例如Tomcat ）的线程资源。
+2.快速失败机制，如果某个服务出现了故障，则调用该服务的请求快速失败，而不是线程等待。
+3.提供回退（ fallback ）方案，在请求发生故障时，提供设定好的回退方案。
+4.使用熔断机制，防止故障扩散到其他服务。
+5.提供熔断器的监控组件Hystrix Dashboard，可以实时监控熔断器的状态
+
+工作机制：
+首先，当服务的某个API 接口的失败次数在一定时间内小于设定的阀值时，熔断器处于关闭状态，
+该API 接口正常提供服务。当该API 接口处理请求的失败次数大于设定的阀值时， Hystrix 判定该API 接口出现了故障，
+打开熔断器，这时请求该API 接口会执行快速失败的逻辑（即fallback 回退的逻辑），不执行业
+务逻辑，请求的线程不会处于阻塞状态。处于打开状态的熔断器， 一段时间后会处于半打开状态，
+并将一定数量的请求执行正常逻辑。剩余的请求会执行快速失败，若执行正常逻辑的
+请求失败了，则熔断器继续打开： 若成功了，则将熔断器关闭。这样熔断器就具有了自我修
+复的能力。
+
+在微服务架构中，为了保证服务实例的可用性，防止服务实例出现故障导致线程阻塞，而
+出现了熔断器模型。烙断器的状况反映了一个程序的可用性和健壮性，它是一个重要指标。
+Hystrix Dashboard 是监控Hystrix 的熔断器状况的一个组件，提供了数据监控和友好的图形化
+展示界面。
+
+五.智能路由网关组件Zuul
+Zuul 作为微服务系统的网关组件，用于构建边界服务（ Edge Service ），致力于动态路由、过滤、监控、弹性伸缩和安全。
+
+Zuul 作为路由网关组件，在微服务架构中有着非常重要的作用，主要体现在以下6 个方面。
+1.Zuul 、Ribbon 以及Eureka 相结合，可以实现智能路由和负载均衡的功能,Zuul 能够将请求流量按某种策略分发到集群状态的多个服务实例。
+2.网关将所有服务的API 接口统一聚合，并统一对外暴露。外界系统调用API 接口时，
+都是由网关对外暴露的API 接口，外界系统不需要知道微服务系统中各服务相互调
+用的复杂性。微服务系统也保护了其内部微服务单元的API 接口， 防止其被外界直
+接调用，导致服务的敏感信息对外暴露。
+3.网关服务可以做用户身份认证和权限认证，防止非法请求操作API 接口，对服务器
+起到保护作用。
+4.网关可以实现监控功能，实时日志输出，对请求进行记录。
+5.网关可以用来实现流量监控，在高流量的情况下，对服务进行降级。
+6.API 接口从内部服务分离出来，方便做测试。
+
+工作原理：
+Zuul 是通过Servlet 来实现的， Zuul 通过自定义的ZuulServlet （类似于Spring MVC 的
+DispatcServlet〕来对请求进行控制。Zuul 的核心是一系列过滤器，可以在Http 请求的发起和
+响应返回期间执行一系列的过滤器。Zuul 包括以下4 种过滤器。
+1.PRE 过滤器： 它是在请求路由到具体的服务之前执行的，这种类型的过滤器可以做安全验证，例如身份验证、参数验证等。
+2.ROUTING 过滤器： 它用于将请求路由到具体的微服务实例。在默认情况下，它使用Http Client 进行网络请求。
+3.POST 过滤器：它是在请求己被路由到微服务后执行的。一般情况下，用作收集统计信息、指标，以及将响应传输到客户端。
+4.ERROR 过滤器：它是在其他过滤器发生错误时执行的。
+
+Zuul 请求的生命周期:
+当一个客户端Request 请求进入Zuul 网关服务时，网关先进入"pre filter",进行一系列
+的验证、操作或者判断。然后交给"routing filter"进行路由转发，转发到具体的服务实例进
+行逻辑处理、返回数据。当具体的服务处理完后，最后由"post filter"，进行处理，该类型的处
+理器处理完之后，将Response 信息返回给客户端。
+
+Zuul 常见使用方式：
+1.一种常见的使用方式是对不同的渠道使用不同的Zuul 来进行路由，例如移动端共用一个
+Zuul 网关实例，Web 端用另一个Zuul 网关实例，其他的客户端用另外一个Zuul 实例进行路由。
+2.另外一种常见的集群是通过Ngnix 和Zuul 相互结合来做负载均衡。暴露在最外面的是
+Ngnix 主从双热备进行Keepalive, Ngnix 经过某种路由策略，将请求路由转发到Zuul 集群上，
+Zuul 最终将请求分发到具体的服务上
+
+六.分布式配置中心组件Spring Cloud Config
+在分布式系统中，每一个功能模块都能拆分成一个独立的服务，一次请求的完成，可能会调用很多个服务协调来完成，
+为了方便服务配置文件统一管理，更易于部署、维护，所以就需要分布式配置中心组件了，在spring cloud中，
+有分布式配置中心组件spring cloud config，它支持配置文件放在在配置服务的内存中，也支持放在远程Git仓库里。
+引入spring cloud config后，我们的外部配置文件就可以集中放置在一个git仓库里，再新建一个config server，
+用来管理所有的配置文件，维护的时候需要更改配置时，只需要在本地更改后，推送到远程仓库，所有的服务实例都可以通过config server来获取配置文件，
+这时每个服务实例就相当于配置服务的客户端config client,为了保证系统的稳定，配置服务端config server可以进行集群部署，
+即使某一个实例，因为某种原因不能提供服务，也还有其他的实例保证服务的继续进行。
+
+在分布式系统中，由于服务数量巨多，为了方便服务配置文件统一管理，实时更新，所以需要分布式配置中心组件。
+在Spring Cloud中，有分布式配置中心组件spring cloud config ，它支持配置服务放在配置服务的内存中（即本地），
+也支持放在远程Git仓库中。在spring cloud config 组件中，分两个角色，一是config server，二是config client。
+
+微服务要实现集中管理微服务配置、不同环境不同配置、运行期间也可动态调整、配置修改后可以自动更新的需求，
+Spring Cloud Config同时满足了以上要求。Spring Cloud Config 分为Config Server和Config Client两部分，
+是一个可以横向扩展，集中式的配置服务器， 默认使用Git存储配置内容。
+
+1.Config Server 可以从本地仓库读取配置文件，也可以从远处Git 仓库读取。本地仓库是指
+将所有的配置文件统一写在Config Server 工程目录下。Config Sever 暴露Http API 接口，Config
+Client 通过调用Config Sever 的Http API 接口来读取配置文件。
+
+2.Spring Cloud Config 支持从远程Git 仓库读取配置文件，即Config Server 可以不从本地的
+仓库读取，而是从远程Git 仓库读取。这样做的好处就是将配置统一管理，并且可以通过Spring
+Cloud Bus 在不人工启动程序的情况下对Config Client 的配置进行刷新。
+
+为什么需要用Spring Cloud Bus 去刷新配置呢？
+如果有几十个微服务，而每一个服务又是多实例，当更改配置时，需要重新启动多个微服
+务实例，会非常麻烦。Spring Cloud Bus 的一个功能就是让这个过程变得简单，当远程Git 仓
+库的配置更改后，只需要向某一个微服务实例发送一个Post 请求，通过消息组件通知其他微
+服务实例重新拉取配置文件。如图10-3 所示，当远程Git 仓库的配置更改后，通过发送
+“ /bus/refresh ” Post 请求给某一个微服务实例，通过消息组件，通知其他微服务实例，更新配
+置文件。
+
+七.服务链路追踪Spring Cloud Sleuth      英 [slu:θ]  美 [sluθ]
+微服务架构是一个分布式架构，微服务系统按业务划分服务单元， 一个微服务系统往往有
+很多个服务单元。由于服务单元数量众多，业务的复杂性较高，如果出现了错误和异常，很难
+去定位。主要体现在一个请求可能需要调用很多个服务，而内部服务的调用复杂性决定了问题
+难以定位。所以在微服务架构中，必须实现分布式链路追踪，去跟进一个请求到底有哪些服务
+参与，参与的顺序又是怎样的，从而达到每个请求的步骤清晰可见，出了问题能够快速定位的
+目的。
+
+目前，常见的链路追踪组件有Google 的Dapper 、Twitter 的Zipkin ， 以及阿里的Eag leeye
+（鹰眼）等，它们都是非常优秀的链路追踪开源组件。
+
+案例中eureka-server 工程作为服务注册中心， 它的创建过程同5.2 节。zipkin-server
+作为链路追踪服务中心，负责存储链路数据。gateway-service 作为服务网关工程，负责请求的
+转发，同时它也作为链路追踪客户端，负责产生链路数据，并上传给zipkin-service 。user-service
+是一个服务提供者，对外暴露API 接口，同时它也作为链路追踪客户端，负责产生链路数据。其中gateway-service工程
+和user-service相当于Zipkin Client。  
+
+可以使用RabbitMQ 传输链路数据
+
+可以在MySQL 数据库中存储链路数据
+
+可以ElasticSearch 中存储链路数据	
+ElasticSearch是一个基于Lucene的搜索服务器。它提供了一个分布式多用户能力的全文搜索引擎，基于RESTful web接口。
+
+可以用Kibana 展示链路数据
+	Kibana是一个开源的分析与可视化平台，设计出来用于和Elasticsearch一起使用的。
+	你可以用kibana搜索、查看、交互存放在Elasticsearch索引里的数据，
+使用各种不同的图表、表格、地图等kibana能够很轻易地展示高级数据分析与可视化。
+
+八.微服务监控Spring Boot Admin
+Spring Boot Admin 用于管理和监控一个或者多个Spring Boot 程序。Spring Boot Admin 分
+为Server 端和Client 端， Client 端可以通过Http 向Server 端注册，也可以结合Spring Cloud
+的服务注册组件Eureka 进行注册。Spring Boot Admin 提供了用AngularJs 编写的Ul 界面，用
+于管理和监控。其中监控内容包括Spring Boot 的监控组件Actuator 的各个Http 节点，也支持
+更高级的功能，包括Turbine 、Jmx 、Loglevel 等。
+
+Turbine   英 [ˈtɜ:baɪn]   美 [ˈtɜ:rbaɪn]
+Hystrix Dashboard 是一个监控熔断器状况的组件，而Turbine 是一个可以聚合多个Hystrix
+Dashboard 的组件。在Spring Boot Admin 中，可以很方便地集成Turbine 组件。集成Turbine 
+组件非常简单，只需要引入相关的依赖并做简单的配置即可。
+
+首先需要两个Eureka Client 工程，在这两个Eureka Client 的工程中实现Hystrix 熔断器和Hystrix Dashboard 组件。
+然后，需要一个Turbine 工程，在这个工程中聚合两个Eureka Client 的Hystrix DashBoard 。最后，在Spring Boot Admin
+Server 中集成Turbine 组件，这样就可以将Turbine 界面显示的信息整合在Spring Boot Admin Server 中，方便统一查看和管理。
+
+Spring Boot Admin 提供了非常良好的组件化界面，例如在上一节就很方便地集成了
+Turbine 的界面。在生产环境中，不希望通过网址直接访问Spring Boot Admin Server 的主页界
+面，因为这个界面包含了太多的服务信息，必须对这个界面的访问进行安全验证。Spring Boot Admin 提供了登录界面的组件，
+并且和Spring Boot Security 相结合， 需要用户登录才能访问Spring Boot Admin Server 的界面。
+
+九.Spring Boot Security
+Spring Security 是Spring Resource 社区的一个安全组件， Spring Security 为JavaEE 企业级
+开发提供了全面的安全防护。安全防护是一个不断变化的目标， Spring Security 通过版本不断
+送代来实现这一目标。Spring Security 采用“安全层”的概念， 使每一层都尽可能安全， 连续
+的安全层可以达到全面的防护。Spring Security 可以在Controller 层、Service 层、DAO 层等以
+加注解的方式来保护应用程序的安全。Spring Security 提供了细粒度的权限控制， 可以精细到
+每一个API 接口、每一个业务的方法， 或者每一个操作数据库的DAO 层的方法。Spring Security
+提供的是应用程序层的安全解决方案， 一个系统的安全还需要考虑传输层和系统层的安全，例
+如采用Htpps 协议、服务器部署防火墙等。
+
+选择Spring Security 的原因：
+1.它对环境的无依赖性、低代码耦合性。有很好的可复用性和可定制性。
+2.Spring Security 的主要目标就是在这两个领域。“认证” 是认证主体的过程， 通常是
+指可以在应用程序中执行操作的用户、设备或其他系统。“授权”是指决定是否允许己认证
+的主体执行某一项操作。
+3.Spring Security 来自Spring Resource 社区，采用了注解的方式控制权限，熟悉Spring 的开发
+者很容易上手Spring Security 。另外一个原因就是Spring Security 易于应用于Spring Boot 工
+程，也易于集成到采用Spring Cloud 构建的微服务系统中。
+
+Spring Boot Security与Spring Security关系：Spring Boot 对 Spring Security 框架进行了封装
+
+总结：首先引入Spring Security 相关的依赖，然后写一个配置类，该配置类继承了WebSecurityConfigurerAdapter ， 
+并在该配置类上加＠EnableWebSecurity 注解开启Web Security 。再需要配置AuthenticationManagerBuilder,
+AuthenticationManagerBuilder 配置了读取用户的认证信息的方式，可以从内存中读取，也可以
+从数据库中读取，或者用其他的方式。其次，需要配置HttpSecurity, HttpSecurity 配置了请求
+的认证规则，即哪些URI 请求需要认证、哪些不需要，以及需要拥有什么权限才能访问。最
+后，如果需要开启方法级别的安全配置，需要通过在配置类上加@EnableGlobalMethodSecurity
+注解开启，方法级别上的安全控制支持secureEnabled 、jsr250Enabled 和prePostEnabled 这3 种
+方式，用的最多的是prePostEnabled 。其中， prePostEnabled 包括PreAuthorize 和PostAuthorize
+两种形式， 一般只用到PreAuthorize 这种方式。
+
+十.使用Spring Cloud 0Auth2 来保护微服务系统
+0Auth2 是一个标准的授权协议。0Auth2 允许不同的客户端通过认
+证和授权的形式来访问被其保护起来的资源。
+
+0Auth 2 的认证流程如图14-1 所示， 具体如下。
+1.用户（资源持有者〉打开客户端， 客户端询问用户授权。
+2.用户同意授权。
+3.客户端向授权服务器申请授权。
+4.授权服务器对客户端进行认证， 也包括用户信息的认证，认证成功后授权给予令牌。
+5.客户端获取令牌后，携带令牌向资源服务器请求资源。
+6.资源服务器确认令牌正确无误， 向客户端释放资源。
+
+首先来看案例的架构设计， 在这个案例中有3 个工程，分别是服务注册中心工程
+eureka-server 、授权中心Uaa 工程auth-service 和资源工程service-hi ，如图14-4 所示。
+首先， 浏览器向auth-service 服务器提供客户端信息、用户名和密码，请求获取Token 。
+auth-service 确认这些信息无误后，根据该用户的信息生成Token 并返回给浏览器。浏览器在
+以后的每次请求都需要携带Token 给资源服务service-hi ，资源服务器获取到请求携带的Token
+后， 通过远程调度将Token 给授权服务auth-service 确认。auth-service 确认Token 正确无误后，
+将该Token 对应的用户的权限信息返回给资源服务service-hi 。如果该Token 对应的用户具有
+访问该API 接口的权限，就正常返回请求结果， 否则返回权限不足的错误提示。
+
+十一.使用Spring Cloud 0Auth2 和JWT 来保护微服务系统
+采用Spring Security 0Auth2和JWT 的方式，避免每次请求都需要远程调度Uaa 服务。
+采用Spring Security 0Auth2 和JWT的方式， Uaa 服务只验证一次， 返回JWT 。
+返回的JWT 包含了用户的所有信息， 包括权限信息。
+
+JSON Web Token ( JWT ）是一种开放的标准（ RFC 7519 ), JWT 定义了一种紧凑且自包含
+的标准， 该标准旨在将各个主体的信息、包装为JSON 对象。主体信息是通过数字签名进行加密
+和验证的。常使用HMAC 算法或RSA （公钥／私钥的非对称性加密〉算法对JWT 进行签名，
+安全性很高。
+
+如何使用JWT:
+下面来看最常见的应用场景，即认证，如图15-1 所示。客户端通过提供用户名、密码向
+服务器请求获取JWT ，服务器判断用户名和密码正确无误之后，将用户信息和权限点经过加
+密以JWT 的形式返回给客户端。在以后的每次请求中， 获取到该JWT 的客户端都需要携带该
+JWT ， 这样做的好处就是以后的请求都不需要通过Uaa 服务来判断该请求的用户以及该用户的
+权限。在微服务系统中，可以利用JWT 实现单点登录。
+
+十二.使用Spring Cloud 构建微服务综合案例
+本章采用Maven 多Module 工程的结构， 一共有11 个Module 工程。其中有10 个Module
+工程为微服务工程，这10 个微服务工程构成了一个完整的微服务系统。微服务系统包含8
+个微服务系统的基础服务， 提供了一整套微服务治理的功能，它们分别是配置中心
+config-server 、注册中心eureka-server 、授权中心Uaa 服务uaa-service 、Turbine 聚合监控服务
+monitoring-service 、链路追踪服务zipkin-service 、聚合监控服务admin-service 、路由网关服务
+gateway-service 、日志服务log-service 。另外还包含了两个资源服务user-service 和blog-service,
+对外暴露API 接口。除此之外，还有一个common 的Module 工程， 为资源服务提供基本的工具
+类。最后，在工程的目录下还有3 个文件夹， sql 文件夹存放项目的sql 文件， logs 文件夹存放
+项目的工程日志， respo 文件夹目录存放项目的配置文件
+
+本案例使用到的技术技如表16-1 所示。其中， Spring Cloud Netflix 包括Eureka 、Hystrix 、
+Hystrix Dashboard 、Turbine 、Ribbon 和Zuul 组件，微服务系统提供了基本的服务治理功能。 
+Spring Cloud 0Auth2 包括Spring 0Auth2 和Spring Boot Security ， 为微服务系统提供了一套安
+全解决方案。Spring Cloud Sleuth 为微服务下系统提供了链路追踪的能力。Turbine 聚含了
+Hystrix Dashboard ，为微服务系统服务的熔断器提供了监控。Spring Boot Admin 是一个非常优
+秀的监控组件，为微服务提供一系列的监控能力。Feign 声明式调用组件，为微服务提供远程
+调度功能。本项目采用的数据库为MySQL 数据库， 采用的ORM 框架为Spring Data JPA 。
+本项目的API 接口文档采用了Swagger2 框架生成在线API 接口文档， API 接口采用RESTful
+风格。
+
+大部分的基础服务， 包括eureka-server 、config-server 、admin- service 、zipkin- service 、
+monitor-service 、uaa-service 、gateway-service ， 最终都是要为资源服务（例如user- serive ）提供
+服务治理的能力。这些能力包括服务注册、分布式配置、监控、链路追踪、负载均衡、熔断、
+路由转发、权限认证等，构成了一个完善的服务治理系统。而资源服务对外直接提供资源， 例
+如API 资源、静态资源等。
+
+
+
+
+
+
+样式：dataGridCell dataGridEvenRowCell dataGridSelectedRowCell
+
+
+
+
+
+
+
+
+
+
+
